@@ -1,8 +1,8 @@
 # Current Status
 
-Last updated: 2026-06-25
+Last updated: 2026-06-27
 Branch: `main`
-Base commit: none yet; repository has no initial commit
+Base commit: 5fea7f6 ("Init and plan", 2026-06-25)
 
 ## Mission
 
@@ -23,8 +23,8 @@ The starting handoff established these decisions:
 - Use 64-bit RISC-V.
 - Use QEMU system emulation.
 - Use QEMU machine `virt`.
-- Prefer Linux over SSH as the path of least resistance.
-- WSL2 is also acceptable.
+- Use WSL2 Ubuntu as the selected path of least resistance.
+- Remote Linux remains acceptable later if it becomes more convenient.
 - Native Windows/MSYS2 is possible but likely more fiddly.
 
 ## Why RISC-V
@@ -43,8 +43,35 @@ The repo currently contains documentation only:
 - `AGENTS.md`: collaboration contract and repo ritual.
 - `README.md`: under-the-hood teaching guide and first-milestone explanation.
 - `current-status.md`: this living project memory.
+- `tools/setup-ubuntu.sh`: reproducible Ubuntu/WSL package setup and
+  toolchain check script.
 
 No kernel code, linker script, build file, or QEMU runner exists yet.
+
+## Selected Development Host
+
+The selected host workflow is WSL2 Ubuntu.
+
+Verified on 2026-06-27:
+
+- Windows WSL distro: `Ubuntu-24.04`
+- WSL version: `2`
+- Ubuntu version: `24.04.4 LTS`
+- Repo path from WSL: `/mnt/c/repos/crapix`
+- Normal future run location: `/mnt/c/repos/crapix`
+
+Fresh Ubuntu setup should be reproducible with:
+
+```bash
+cd /mnt/c/repos/crapix
+bash tools/setup-ubuntu.sh
+```
+
+The check-only path is:
+
+```bash
+bash tools/setup-ubuntu.sh --check-only
+```
 
 ## First Milestone
 
@@ -63,25 +90,29 @@ The concept path to understand is:
 
 ## Immediate Next Action
 
-Help Ben set up and verify the Linux toolchain.
+Create the fast workflow skeleton:
 
-Start by confirming the Linux distribution, then install or locate:
+- `make check-toolchain`
+- `make run`
+- `make debug`
+- `make gdb`
+- `make clean`
 
-- QEMU RISC-V system emulator,
-- RISC-V bare-metal GCC/binutils,
-- `gdb` or `gdb-multiarch`,
-- `make`.
+Keep this step focused on workflow plumbing. Do not add kernel code yet.
 
-Run and explain:
+## Verified WSL2 Toolchain
 
-```bash
-qemu-system-riscv64 --version
-qemu-system-riscv64 --machine help
-riscv64-unknown-elf-gcc --version
+Verified on 2026-06-27 inside `Ubuntu-24.04`:
+
+```text
+QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.17)
+virt                 RISC-V VirtIO board
+riscv64-unknown-elf-gcc (13.2.0-11ubuntu1+12) 13.2.0
+GNU ld (2.42-1ubuntu1+6) 2.42
+GNU objdump (2.42-1ubuntu1+6) 2.42
+GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1
+GNU Make 4.3
 ```
-
-Only after those checks pass should the first three-file kernel skeleton be
-proposed.
 
 ## Bite-Sized 10-Day Plan
 
@@ -104,10 +135,12 @@ clean learning checkpoint.
 
 ## Current Gaps And Risks
 
-- Toolchain is not verified yet.
-- Host Linux distribution is not confirmed yet.
-- No decision has been made about exact package names for the user's chosen
-  Linux environment.
+- Toolchain is verified in WSL2 Ubuntu.
+- Host Linux distribution is confirmed as WSL2 `Ubuntu-24.04`.
+- Package names for Ubuntu 24.04 have been checked through apt metadata:
+  `qemu-system-misc`, `gcc-riscv64-unknown-elf`,
+  `binutils-riscv64-unknown-elf`, `gdb-multiarch`, `make`, `git`, and
+  `ca-certificates`.
 - No source layout exists yet.
 - No boot address, linker script, stack layout, or UART address has been
   verified in this repo yet.
@@ -132,6 +165,31 @@ Read AGENTS.md, README.md, and current-status.md, then help me with ...
 
 ## Session Log
 
+### 2026-06-27
+
+- Closed the Day 1 dev-host decision: Crapix will use WSL2 Ubuntu as the normal
+  local development host.
+- Verified the available WSL distro is `Ubuntu-24.04`, WSL version `2`, running
+  Ubuntu `24.04.4 LTS`.
+- Verified the repo path from WSL is `/mnt/c/repos/crapix`; this is where
+  future `make run` and QEMU/GDB commands should execute.
+- Checked Ubuntu 24.04 apt metadata for the expected reproducible setup
+  packages: `qemu-system-misc`, `gcc-riscv64-unknown-elf`,
+  `binutils-riscv64-unknown-elf`, `gdb-multiarch`, `make`, `git`, and
+  `ca-certificates`.
+- Added `tools/setup-ubuntu.sh` so a fresh Ubuntu environment can install or
+  check the expected toolchain without relying on memory.
+- Current WSL tool state before running the setup script: `make`, `git`, and
+  `ca-certificates` are present; QEMU RISC-V, RISC-V bare-metal GCC/binutils,
+  and `gdb-multiarch` are not present yet.
+- Most likely next step: run `bash tools/setup-ubuntu.sh` from WSL, then use
+  its output to close Day 2 once the toolchain commands are verified.
+- Ran the setup script successfully and verified the installed WSL2 toolchain:
+  QEMU `8.2.2`, QEMU `virt` machine support, RISC-V GCC `13.2.0`, binutils
+  `2.42`, GDB `15.1`, and Make `4.3`.
+- Closed the Day 2 toolchain verification issue. The next task is Day 3:
+  create the fast workflow skeleton without adding kernel code yet.
+
 ### 2026-06-25
 
 - Read the Codex handoff document for the toy RISC-V operating system.
@@ -146,3 +204,6 @@ Read AGENTS.md, README.md, and current-status.md, then help me with ...
   with the first arc focused on WSL2/SSH choice, toolchain verification, a
   Make-based run/debug loop, then the smallest possible assembly-to-C-to-UART
   boot path.
+- Created GitHub issues `#1` through `#10` in `kwende/crapix`, one per day of
+  the bite-sized plan, so the setup and first boot path can be tracked without
+  reopening the docs every time.

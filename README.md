@@ -39,14 +39,28 @@ interrupts, and page tables.
 
 ## Host Workflow
 
-Preferred path:
+Selected path:
 
-1. Use WSL2 Ubuntu on this machine if it keeps the lowest-friction loop.
-2. Use a Linux machine over SSH if that is already always-on and convenient.
-3. Treat native Windows/MSYS2 as possible but more fiddly.
+1. Use WSL2 Ubuntu on this machine.
+2. Keep the repo at `C:\repos\crapix`.
+3. From WSL, work in `/mnt/c/repos/crapix`.
+4. Use a Linux machine over SSH only if it becomes more convenient later.
+5. Treat native Windows/MSYS2 as possible but lower-priority.
 
-The first setup session should identify the Linux distribution and package
-manager before installing anything.
+The current default WSL distro is `Ubuntu-24.04`, verified as Ubuntu `24.04.4 LTS`.
+
+Fresh Ubuntu setup should be reproducible from the repo:
+
+```bash
+cd /mnt/c/repos/crapix
+bash tools/setup-ubuntu.sh
+```
+
+To check without installing packages:
+
+```bash
+bash tools/setup-ubuntu.sh --check-only
+```
 
 The repo should eventually support this simple loop from the repo root:
 
