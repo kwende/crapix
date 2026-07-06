@@ -29,9 +29,10 @@ better than a larger system the user cannot inspect comfortably.
 - ISA: 64-bit RISC-V.
 - Emulator: QEMU system emulation.
 - QEMU machine: `virt`.
-- Preferred host workflow: Linux over SSH.
-- Also acceptable: WSL2.
-- Possible but lower-priority: native Windows or MSYS2.
+- Selected host workflow: WSL2 Ubuntu.
+- Expected WSL repo path: `/mnt/c/repos/crapix`.
+- Remote Linux remains acceptable if it becomes more convenient.
+- Native Windows/MSYS2 is lower-priority because it adds setup friction.
 
 RISC-V was chosen because it is clean enough to read and still has the modern
 OS concepts we want to study, including privilege modes, traps, timer
@@ -71,6 +72,7 @@ Before substantial work:
 - Read `current-status.md`.
 - Read `README.md` for the current under-the-hood model.
 - Check what files already exist instead of assuming a standard OS layout.
+- From WSL2, work from `/mnt/c/repos/crapix`.
 - If touching build or boot behavior, explain the affected command path before
   editing.
 
