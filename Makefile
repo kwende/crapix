@@ -1,4 +1,4 @@
-.PHONY: check-toolchain run debug gdb clean
+.PHONY: check-toolchain run debug gdb disasm clean
 
 check-toolchain:
 	bash tools/setup-ubuntu.sh --check-only
@@ -11,6 +11,9 @@ debug:
 
 gdb:
 	@echo "No kernel image exists yet. GDB workflow starts on Day 7."
+
+disasm:
+	@echo "No kernel image exists yet. Disassembly workflow starts once we have an ELF to inspect."
 
 clean:
 	@rm -rf build
