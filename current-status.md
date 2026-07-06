@@ -2,7 +2,7 @@
 
 Last updated: 2026-06-27
 Branch: `main`
-Base commit: none yet; repository has no initial commit
+Base commit: 5fea7f6 ("Init and plan", 2026-06-25)
 
 ## Mission
 
