@@ -47,8 +47,7 @@ Selected path:
 4. Use a Linux machine over SSH only if it becomes more convenient later.
 5. Treat native Windows/MSYS2 as possible but lower-priority.
 
-The current default WSL distro is `Ubuntu-24.04`, verified as Ubuntu `24.04.4
-LTS`.
+The current default WSL distro is `Ubuntu-24.04`, verified as Ubuntu `24.04.4 LTS`.
 
 Fresh Ubuntu setup should be reproducible from the repo:
 
