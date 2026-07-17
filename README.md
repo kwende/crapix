@@ -17,12 +17,12 @@ there.
 
 ## Current State
 
-The repository has just been initialized with project memory and teaching
-guidance.
+The repository has project memory, reproducible WSL2 setup, LF line-ending
+guardrails, and a first Makefile workflow skeleton.
 
-No kernel source, linker script, build system, or QEMU runner has been added
-yet. That is intentional. The first real implementation step should happen
-after the Linux toolchain is verified.
+No kernel source, linker script, or real QEMU runner has been added yet. That
+is intentional. The current `run`, `debug`, and `gdb` Make targets are stubs
+until there is a kernel image to load.
 
 ## Chosen Architecture
 
@@ -109,6 +109,40 @@ What each tool does:
 - `make` gives us a small repeatable build entry point.
 - `gdb` or `gdb-multiarch` lets us stop the emulated CPU, inspect registers,
   and step through early boot code.
+
+## First QEMU Shape
+
+The first QEMU machine shape is:
+
+```bash
+qemu-system-riscv64 \
+  -machine virt \
+  -m 128M \
+  -nographic \
+  -serial mon:stdio \
+  -bios none
+```
+
+What those flags mean:
+
+- `-machine virt`: create QEMU's generic RISC-V virtual board.
+- `-m 128M`: give the guest machine 128 MiB of RAM.
+- `-nographic`: do not open a graphical window; use the terminal.
+- `-serial mon:stdio`: connect the guest serial port and QEMU monitor to the
+  host terminal.
+- `-bios none`: skip firmware for the first bare-metal path.
+
+Once Crapix has a kernel image, the command will add something like:
+
+```bash
+-kernel build/crapix.elf
+```
+
+Early Crapix does not need a disk image. QEMU will load the kernel ELF from the
+host into guest memory, then the virtual CPU will execute it. When QEMU exits,
+guest RAM and CPU state disappear. Disk images come later, after Crapix has a
+block-device driver and enough filesystem code for "mounting" to mean
+something inside the guest OS.
 
 ## First Milestone
 

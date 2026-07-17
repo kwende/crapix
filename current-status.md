@@ -1,6 +1,6 @@
 # Current Status
 
-Last updated: 2026-06-27
+Last updated: 2026-07-11
 Branch: `main`
 Base commit: 5fea7f6 ("Init and plan", 2026-06-25)
 
@@ -38,15 +38,18 @@ RISC-V was chosen because it balances readability with real OS concepts.
 
 ## Current Repo Snapshot
 
-The repo currently contains documentation only:
+The repo currently contains documentation and workflow scaffolding only:
 
 - `AGENTS.md`: collaboration contract and repo ritual.
 - `README.md`: under-the-hood teaching guide and first-milestone explanation.
 - `current-status.md`: this living project memory.
 - `tools/setup-ubuntu.sh`: reproducible Ubuntu/WSL package setup and
   toolchain check script.
+- `Makefile`: first workflow skeleton, with real `check-toolchain` and stubbed
+  `run`, `debug`, and `gdb` targets.
+- `.gitattributes` and `.editorconfig`: LF line-ending guardrails.
 
-No kernel code, linker script, build file, or QEMU runner exists yet.
+No kernel code, linker script, or real QEMU runner exists yet.
 
 ## Selected Development Host
 
@@ -90,15 +93,17 @@ The concept path to understand is:
 
 ## Immediate Next Action
 
-Create the fast workflow skeleton:
+Add a minimal linker script draft.
 
-- `make check-toolchain`
-- `make run`
-- `make debug`
-- `make gdb`
-- `make clean`
+Keep this step focused on linker/layout concepts:
 
-Keep this step focused on workflow plumbing. Do not add kernel code yet.
+- entry symbol,
+- output architecture,
+- section placement,
+- the first chosen RAM/load address,
+- and what is still an assumption.
+
+Do not add assembly, C, UART code, or a real QEMU run target yet.
 
 ## Verified WSL2 Toolchain
 
@@ -113,6 +118,34 @@ GNU objdump (2.42-1ubuntu1+6) 2.42
 GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1
 GNU Make 4.3
 ```
+
+## First QEMU Command Shape
+
+Verified on 2026-07-11:
+
+```bash
+qemu-system-riscv64 \
+  -machine virt \
+  -m 128M \
+  -nographic \
+  -serial mon:stdio \
+  -bios none \
+  -S
+```
+
+The command starts successfully when wrapped with a short timeout. `-S` pauses
+the virtual CPU at startup, which is useful for confirming that QEMU accepts
+the machine/options even before Crapix has a kernel image.
+
+The future kernel-loading form will add:
+
+```bash
+-kernel build/crapix.elf
+```
+
+No disk image is needed for the first milestone. QEMU will load the ELF from
+the host into guest memory; storage devices come later after Crapix can talk to
+a virtual block device.
 
 ## Bite-Sized 10-Day Plan
 
@@ -164,6 +197,19 @@ Read AGENTS.md, README.md, and current-status.md, then help me with ...
 ```
 
 ## Session Log
+
+### 2026-07-11
+
+- Confirmed the Day 4 QEMU command shape for the `virt` machine.
+- Verified QEMU reports `virt` as `RISC-V VirtIO board`.
+- Verified the no-kernel command starts successfully when paused with `-S` and
+  killed by a timeout:
+  `qemu-system-riscv64 -machine virt -m 128M -nographic -serial mon:stdio -bios none -S`.
+- Captured the conceptual model: QEMU creates the virtual RISC-V board, later
+  `-kernel build/crapix.elf` will load the kernel into guest memory, and disk
+  images are unnecessary until Crapix has block-device/filesystem support.
+- Most likely next step: Day 5, add a minimal linker script draft and document
+  the entry symbol, section placement, and address assumptions.
 
 ### 2026-06-27
 
