@@ -131,6 +131,7 @@ What those flags mean:
 - `-serial mon:stdio`: connect the guest serial port and QEMU monitor to the
   host terminal.
 - `-bios none`: skip firmware for the first bare-metal path.
+- `-S`: pause the virtual CPU at startup (useful for validating options before a kernel image exists).
 
 Once Crapix has a kernel image, the command will add something like:
 
