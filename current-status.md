@@ -1,8 +1,8 @@
 # Current Status
 
-Last updated: 2026-06-27
-Branch: `main`
-Base commit: 5fea7f6 ("Init and plan", 2026-06-25)
+Last updated: 2026-07-17
+Branch: `3-Fast_Workflow_Skeleton`
+Current commit before this documentation update: e9460fd
 
 ## Mission
 
@@ -38,15 +38,21 @@ RISC-V was chosen because it balances readability with real OS concepts.
 
 ## Current Repo Snapshot
 
-The repo currently contains documentation only:
+The repo currently contains documentation and workflow scaffolding only:
 
 - `AGENTS.md`: collaboration contract and repo ritual.
 - `README.md`: under-the-hood teaching guide and first-milestone explanation.
 - `current-status.md`: this living project memory.
 - `tools/setup-ubuntu.sh`: reproducible Ubuntu/WSL package setup and
   toolchain check script.
+- `Makefile`: first workflow skeleton, with real `check-toolchain` and stubbed
+  `run`, `debug`, `gdb`, and `disasm` targets.
+- `linker.ld`: minimal layout draft with `_start` as the entry symbol and
+  `0x80000000` as the initial image base.
+- `.gitattributes` and `.editorconfig`: LF line-ending guardrails.
 
-No kernel code, linker script, build file, or QEMU runner exists yet.
+No kernel code or real QEMU runner exists yet; only a minimal linker script draft
+has been added.
 
 ## Selected Development Host
 
@@ -90,15 +96,17 @@ The concept path to understand is:
 
 ## Immediate Next Action
 
-Create the fast workflow skeleton:
+Add one minimal assembly entry file that defines `_start` and loops forever.
 
-- `make check-toolchain`
-- `make run`
-- `make debug`
-- `make gdb`
-- `make clean`
+Keep this step focused on the first executable instruction path:
 
-Keep this step focused on workflow plumbing. Do not add kernel code yet.
+- assemble the entry file,
+- link it with `linker.ld`,
+- inspect the ELF entry point and `.text` placement,
+- load it with QEMU,
+- and confirm that the guest remains in the intentional loop.
+
+Do not add stack setup, C, UART code, or the GDB workflow yet.
 
 ## Verified WSL2 Toolchain
 
@@ -113,6 +121,34 @@ GNU objdump (2.42-1ubuntu1+6) 2.42
 GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1
 GNU Make 4.3
 ```
+
+## First QEMU Command Shape
+
+Verified on 2026-07-11:
+
+```bash
+qemu-system-riscv64 \
+  -machine virt \
+  -m 128M \
+  -nographic \
+  -serial mon:stdio \
+  -bios none \
+  -S
+```
+
+The command starts successfully when wrapped with a short timeout. `-S` pauses
+the virtual CPU at startup, which is useful for confirming that QEMU accepts
+the machine/options even before Crapix has a kernel image.
+
+The future kernel-loading form will add:
+
+```bash
+-kernel build/crapix.elf
+```
+
+No disk image is needed for the first milestone. QEMU will load the ELF from
+the host into guest memory; storage devices come later after Crapix can talk to
+a virtual block device.
 
 ## Bite-Sized 10-Day Plan
 
@@ -141,9 +177,10 @@ clean learning checkpoint.
   `qemu-system-misc`, `gcc-riscv64-unknown-elf`,
   `binutils-riscv64-unknown-elf`, `gdb-multiarch`, `make`, `git`, and
   `ca-certificates`.
-- No source layout exists yet.
-- No boot address, linker script, stack layout, or UART address has been
-  verified in this repo yet.
+- No assembly or C source layout exists yet.
+- `linker.ld` currently chooses `0x80000000`, declares `_start`, and places the
+  standard code/data sections, but no ELF has yet verified those choices.
+- No stack layout or UART address has been selected or verified yet.
 - The biggest process risk is moving too fast and hiding important concepts in
   generated scaffolding.
 
@@ -164,6 +201,33 @@ Read AGENTS.md, README.md, and current-status.md, then help me with ...
 ```
 
 ## Session Log
+
+### 2026-07-17
+
+- Reconciled `AGENTS.md`, `README.md`, and `current-status.md` with the existing
+  `linker.ld` draft.
+- Recorded Days 1 through 5 as complete and made the Day 6 assembly entry the
+  immediate next checkpoint.
+- Documented the current linker contract: ELF entry symbol `_start`, image base
+  `0x80000000`, and ordered `.text`, `.rodata`, `.data`, and `.bss` sections.
+- Clarified that the layout is drafted but not yet verified by a linked ELF or
+  a QEMU boot.
+- Fixed the missing Markdown fence in the documented QEMU command.
+- Most likely next step: add the smallest `_start` assembly loop, link it, and
+  verify the ELF layout before adding a stack or C code.
+
+### 2026-07-11
+
+- Confirmed the Day 4 QEMU command shape for the `virt` machine.
+- Verified QEMU reports `virt` as `RISC-V VirtIO board`.
+- Verified the no-kernel command starts successfully when paused with `-S` and
+  killed by a timeout:
+  `qemu-system-riscv64 -machine virt -m 128M -nographic -serial mon:stdio -bios none -S`.
+- Captured the conceptual model: QEMU creates the virtual RISC-V board, later
+  `-kernel build/crapix.elf` will load the kernel into guest memory, and disk
+  images are unnecessary until Crapix has block-device/filesystem support.
+- Most likely next step: Day 5, add a minimal linker script draft and document
+  the entry symbol, section placement, and address assumptions.
 
 ### 2026-06-27
 

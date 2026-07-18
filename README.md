@@ -17,12 +17,15 @@ there.
 
 ## Current State
 
-The repository has just been initialized with project memory and teaching
-guidance.
+The repository has project memory, reproducible WSL2 setup, LF line-ending
+guardrails, a first Makefile workflow skeleton, and a minimal linker script
+draft.
 
-No kernel source, linker script, build system, or QEMU runner has been added
-yet. That is intentional. The first real implementation step should happen
-after the Linux toolchain is verified.
+The linker script declares `_start` as the entry symbol and begins laying out
+the kernel at `0x80000000`, the start of RAM for the initial QEMU `virt` model.
+No assembly or C kernel source has been added yet, so no ELF can be built. The
+current `run`, `debug`, `gdb`, and `disasm` Make targets remain honest stubs
+until there is a kernel image to load or inspect.
 
 ## Chosen Architecture
 
@@ -62,7 +65,7 @@ To check without installing packages:
 bash tools/setup-ubuntu.sh --check-only
 ```
 
-The repo should eventually support this simple loop from the repo root:
+The repo is growing toward this simple loop from the repo root:
 
 ```bash
 make check-toolchain
@@ -76,9 +79,15 @@ make clean
 No deployment, browser, server, or remote copy step should be required for the
 normal learning loop. Edit, run QEMU, inspect terminal/GDB output, stop.
 
-## First Toolchain Check
+## Verified Toolchain
 
-Before generating kernel files, verify these tools:
+The WSL2 toolchain has been verified. It can be rechecked at any time with:
+
+```bash
+make check-toolchain
+```
+
+That check verifies these underlying tools:
 
 ```bash
 qemu-system-riscv64 --version
@@ -110,6 +119,42 @@ What each tool does:
 - `gdb` or `gdb-multiarch` lets us stop the emulated CPU, inspect registers,
   and step through early boot code.
 
+## First QEMU Shape
+
+The first QEMU machine shape is:
+
+```bash
+qemu-system-riscv64 \
+  -machine virt \
+  -m 128M \
+  -nographic \
+  -serial mon:stdio \
+  -bios none \
+  -S
+```
+
+What those flags mean:
+
+- `-machine virt`: create QEMU's generic RISC-V virtual board.
+- `-m 128M`: give the guest machine 128 MiB of RAM.
+- `-nographic`: do not open a graphical window; use the terminal.
+- `-serial mon:stdio`: connect the guest serial port and QEMU monitor to the
+  host terminal.
+- `-bios none`: skip firmware for the first bare-metal path.
+- `-S`: pause the virtual CPU at startup (useful for validating options before a kernel image exists).
+
+Once Crapix has a kernel image, the command will add something like:
+
+```bash
+-kernel build/crapix.elf
+```
+
+Early Crapix does not need a disk image. QEMU will load the kernel ELF from the
+host into guest memory, then the virtual CPU will execute it. When QEMU exits,
+guest RAM and CPU state disappear. Disk images come later, after Crapix has a
+block-device driver and enough filesystem code for "mounting" to mean
+something inside the guest OS.
+
 ## First Milestone
 
 Boot a minimal kernel in QEMU and print a message to the serial console.
@@ -125,14 +170,29 @@ The learning path for that milestone is:
 7. C writes bytes to the UART's memory-mapped I/O address.
 8. QEMU displays those UART bytes in the terminal.
 
-That first kernel will likely need only three conceptual files:
+That first kernel needs only three conceptual source/layout files:
 
 - an assembly entry file,
-- a linker script,
+- the existing `linker.ld`,
 - and a tiny C file that writes to the UART.
 
-Those files should be introduced only after the toolchain is confirmed, and
-each one should be explained as it is added.
+The toolchain is confirmed and the linker script has been introduced. The
+assembly and C files should still be added one at a time and explained as they
+are added.
+
+## Current Linker Layout
+
+`linker.ld` is the first contract between the build and the future boot code:
+
+- `ENTRY(_start)` says which symbol should become the ELF entry point.
+- `. = 0x80000000` begins the linked image at the initial QEMU `virt` RAM base.
+- `.text`, `.rodata`, `.data`, and `.bss` collect the usual code and data
+  sections in that order.
+
+This is still a draft rather than a verified boot layout. There is no `_start`
+implementation or object file yet, so the next checkpoint is to add the
+smallest assembly entry and inspect the resulting ELF before adding a stack or
+C code.
 
 ## 10-Day Bite-Sized Plan
 
@@ -140,18 +200,18 @@ This plan is not "build an operating system in 10 days." It is a small-session
 forecast for getting from an empty repo to the first serial-console milestone.
 Each day should fit in about 30 minutes.
 
-| Day | Goal | Stop when |
-| --- | --- | --- |
-| 1 | Choose the actual dev host: WSL2 Ubuntu or remote Linux. | We know the shell, distro, repo path, and where `make run` will happen. |
-| 2 | Verify or install the toolchain. | QEMU, RISC-V GCC/binutils, Make, and GDB commands are located. |
-| 3 | Create the workflow skeleton only. | `make check-toolchain` gives a clean environment report. |
-| 4 | Inspect the QEMU `virt` command before using it for real. | The README explains the chosen QEMU command and flags. |
-| 5 | Add a tiny linker script draft. | We understand sections, the entry symbol, and why addresses matter. |
-| 6 | Add one assembly entry file with an infinite loop. | `make run` boots QEMU into our code and does nothing successfully. |
-| 7 | Add the debugger loop. | `make debug` and `make gdb` let us inspect `pc` and one instruction. |
-| 8 | Add stack setup in assembly. | GDB shows `sp` has the intended value. |
-| 9 | Add a C entry function and transfer control to it. | GDB proves control reached C. |
-| 10 | Add UART serial output. | `make run` prints the first Crapix message in the terminal. |
+| Day | Status | Goal | Stop when |
+| --- | --- | --- | --- |
+| 1 | Complete | Choose the actual dev host: WSL2 Ubuntu or remote Linux. | We know the shell, distro, repo path, and where `make run` will happen. |
+| 2 | Complete | Verify or install the toolchain. | QEMU, RISC-V GCC/binutils, Make, and GDB commands are located. |
+| 3 | Complete | Create the workflow skeleton only. | `make check-toolchain` gives a clean environment report. |
+| 4 | Complete | Inspect the QEMU `virt` command before using it for real. | The README explains the chosen QEMU command and flags. |
+| 5 | Complete | Add a tiny linker script draft. | We understand sections, the entry symbol, and why addresses matter. |
+| 6 | Next | Add one assembly entry file with an infinite loop. | `make run` boots QEMU into our code and does nothing successfully. |
+| 7 | Planned | Add the debugger loop. | `make debug` and `make gdb` let us inspect `pc` and one instruction. |
+| 8 | Planned | Add stack setup in assembly. | GDB shows `sp` has the intended value. |
+| 9 | Planned | Add a C entry function and transfer control to it. | GDB proves control reached C. |
+| 10 | Planned | Add UART serial output. | `make run` prints the first Crapix message in the terminal. |
 
 ## Teaching Rule
 

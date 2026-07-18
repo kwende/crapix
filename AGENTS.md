@@ -96,6 +96,7 @@ make check-toolchain
 make run
 make debug
 make gdb
+make disasm
 make clean
 ```
 
@@ -103,7 +104,14 @@ The expected default host is WSL2 Ubuntu unless the user chooses a remote Linux
 machine. Avoid adding Docker, web UI, deployment, or native Windows toolchain
 work until there is a concrete reason.
 
-Before writing that kernel, verify the Linux toolchain:
+The Linux toolchain has been verified in WSL2 Ubuntu. Recheck it at any time
+with:
+
+```bash
+make check-toolchain
+```
+
+The underlying tools are:
 
 ```bash
 qemu-system-riscv64 --version
@@ -111,7 +119,7 @@ qemu-system-riscv64 --machine help
 riscv64-unknown-elf-gcc --version
 ```
 
-Also locate `make` and either `gdb` or `gdb-multiarch`.
+The verified environment also includes `make` and `gdb-multiarch`.
 
 ## Definitions
 
