@@ -49,7 +49,8 @@ The repo currently contains documentation and workflow scaffolding only:
   `run`, `debug`, and `gdb` targets.
 - `.gitattributes` and `.editorconfig`: LF line-ending guardrails.
 
-No kernel code, linker script, or real QEMU runner exists yet.
+No kernel code or real QEMU runner exists yet; only a minimal linker script draft
+has been added.
 
 ## Selected Development Host
 
