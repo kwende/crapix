@@ -120,8 +120,8 @@ qemu-system-riscv64 \
   -m 128M \
   -nographic \
   -serial mon:stdio \
-  -bios none
-```
+  -bios none \
+  -S
 
 What those flags mean:
 
