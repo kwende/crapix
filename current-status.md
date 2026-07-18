@@ -1,8 +1,8 @@
 # Current Status
 
-Last updated: 2026-07-11
-Branch: `main`
-Base commit: 5fea7f6 ("Init and plan", 2026-06-25)
+Last updated: 2026-07-17
+Branch: `3-Fast_Workflow_Skeleton`
+Current commit before this documentation update: e9460fd
 
 ## Mission
 
@@ -46,7 +46,9 @@ The repo currently contains documentation and workflow scaffolding only:
 - `tools/setup-ubuntu.sh`: reproducible Ubuntu/WSL package setup and
   toolchain check script.
 - `Makefile`: first workflow skeleton, with real `check-toolchain` and stubbed
-  `run`, `debug`, and `gdb` targets.
+  `run`, `debug`, `gdb`, and `disasm` targets.
+- `linker.ld`: minimal layout draft with `_start` as the entry symbol and
+  `0x80000000` as the initial image base.
 - `.gitattributes` and `.editorconfig`: LF line-ending guardrails.
 
 No kernel code or real QEMU runner exists yet; only a minimal linker script draft
@@ -94,17 +96,17 @@ The concept path to understand is:
 
 ## Immediate Next Action
 
-Add a minimal linker script draft.
+Add one minimal assembly entry file that defines `_start` and loops forever.
 
-Keep this step focused on linker/layout concepts:
+Keep this step focused on the first executable instruction path:
 
-- entry symbol,
-- output architecture,
-- section placement,
-- the first chosen RAM/load address,
-- and what is still an assumption.
+- assemble the entry file,
+- link it with `linker.ld`,
+- inspect the ELF entry point and `.text` placement,
+- load it with QEMU,
+- and confirm that the guest remains in the intentional loop.
 
-Do not add assembly, C, UART code, or a real QEMU run target yet.
+Do not add stack setup, C, UART code, or the GDB workflow yet.
 
 ## Verified WSL2 Toolchain
 
@@ -175,9 +177,10 @@ clean learning checkpoint.
   `qemu-system-misc`, `gcc-riscv64-unknown-elf`,
   `binutils-riscv64-unknown-elf`, `gdb-multiarch`, `make`, `git`, and
   `ca-certificates`.
-- No source layout exists yet.
-- No boot address, linker script, stack layout, or UART address has been
-  verified in this repo yet.
+- No assembly or C source layout exists yet.
+- `linker.ld` currently chooses `0x80000000`, declares `_start`, and places the
+  standard code/data sections, but no ELF has yet verified those choices.
+- No stack layout or UART address has been selected or verified yet.
 - The biggest process risk is moving too fast and hiding important concepts in
   generated scaffolding.
 
@@ -198,6 +201,20 @@ Read AGENTS.md, README.md, and current-status.md, then help me with ...
 ```
 
 ## Session Log
+
+### 2026-07-17
+
+- Reconciled `AGENTS.md`, `README.md`, and `current-status.md` with the existing
+  `linker.ld` draft.
+- Recorded Days 1 through 5 as complete and made the Day 6 assembly entry the
+  immediate next checkpoint.
+- Documented the current linker contract: ELF entry symbol `_start`, image base
+  `0x80000000`, and ordered `.text`, `.rodata`, `.data`, and `.bss` sections.
+- Clarified that the layout is drafted but not yet verified by a linked ELF or
+  a QEMU boot.
+- Fixed the missing Markdown fence in the documented QEMU command.
+- Most likely next step: add the smallest `_start` assembly loop, link it, and
+  verify the ELF layout before adding a stack or C code.
 
 ### 2026-07-11
 
