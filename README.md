@@ -20,9 +20,9 @@ there.
 The repository has project memory, reproducible WSL2 setup, LF line-ending
 guardrails, and a first Makefile workflow skeleton.
 
-No kernel source, linker script, or real QEMU runner has been added yet. That
-is intentional. The current `run`, `debug`, and `gdb` Make targets are stubs
-until there is a kernel image to load.
+No kernel source or real QEMU runner has been added yet. That is intentional. The
+current `run`, `debug`, and `gdb` Make targets are stubs until there is a kernel
+image to load.
 
 ## Chosen Architecture
 
